@@ -1,19 +1,26 @@
-﻿Build started 5/31/2014 12:45:47 PM.
+﻿Build started 5/31/2014 3:35:59 PM.
      1>Project "C:\Users\mace707\documents\visual studio 2013\Projects\SleepingSloth\SleepingSloth\SleepingSloth.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
-         main.cpp
-     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\main.cpp(54): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\main.cpp(55): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
-     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\main.cpp(56): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+         C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Circles.cpp Cubes.cpp ObjectFactory.cpp
+         Circles.cpp
+     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\circles.cpp(14): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\circles.cpp(15): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\circles.cpp(16): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\circles.cpp(18): warning C4305: 'initializing' : truncation from 'double' to 'GLfloat'
+     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\circles.cpp(26): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+     1>c:\users\mace707\documents\visual studio 2013\projects\sleepingsloth\sleepingsloth\circles.cpp(31): warning C4305: 'argument' : truncation from 'double' to 'GLfloat'
+         Generating Code...
+         Skipping... (no relevant changes detected)
+         ObjectFactory.cpp
+         Cubes.cpp
        Link:
          C:\Program Files\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\mace707\documents\visual studio 2013\Projects\SleepingSloth\Debug\SleepingSloth.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\mace707\documents\visual studio 2013\Projects\SleepingSloth\Debug\SleepingSloth.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\mace707\documents\visual studio 2013\Projects\SleepingSloth\Debug\SleepingSloth.lib" /MACHINE:X86 Debug\Circles.obj
          Debug\Cubes.obj
          Debug\main.obj
-         Debug\ObjectMorpher.obj
+         Debug\ObjectFactory.obj
          SleepingSloth.vcxproj -> C:\Users\mace707\documents\visual studio 2013\Projects\SleepingSloth\Debug\SleepingSloth.exe
      1>Done Building Project "C:\Users\mace707\documents\visual studio 2013\Projects\SleepingSloth\SleepingSloth\SleepingSloth.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:02.12
+Time Elapsed 00:00:04.45
