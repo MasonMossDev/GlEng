@@ -3,7 +3,9 @@
 #include <math.h>
 #include <ctime>
 #include <stdlib.h>
-#include "Circles.h"
+#include "Cubes.h"
+
+
 
 double VerticalAngle = -20.0f;
 bool MouseActive = false;
@@ -19,10 +21,23 @@ clock_t RotStartTime;
 void TestDrawing()
 {
 
+	ObjectFactory *Circ1 = ObjectFactory::create("Circles");
+	Circ1->SetValues( 0, 0, 0, 1, 1, 1, 0, 0.1, 0.5 );
+	Circ1->Draw();
+
+	ObjectFactory *Cube1 = ObjectFactory::create("Cubes");
+	Cube1->SetValues( 0, 0, 100, 1, 1, 1, 1, 0, 1 );
+	Cube1->Draw();
+	
 	Circles circle1;
-	ObjectMorpher * Obj1 = &circle1;
-	Obj1->SetValues(0, 0, 0, 1, 1, 1, 1, 0, 0);
-	circle1.DrawCircle(1);
+	ObjectFactory * Obj1 = &circle1;
+	Obj1->SetValues( 0, 0, -50, 1, 1, 1, 0, 0.1, 1 );
+	circle1.DrawCircle( );
+
+	Cubes cube1;
+	ObjectFactory * Obj2 = &cube1;
+	Obj2->SetValues( 0, 0, -50, 1, 1, 1, 0, 1, 0 );
+	cube1.DrawCube( );
 }
 
 void initRendering()
@@ -30,7 +45,7 @@ void initRendering()
 	glEnable(GL_DEPTH_TEST);
 }
 
-void handleResize(int w, int h)\
+void handleResize(int w, int h)
 {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);

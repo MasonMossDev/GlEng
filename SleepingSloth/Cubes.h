@@ -1,9 +1,12 @@
-#include "ObjectMorpher.h"
+#include "Circles.h"
 
-class Cubes : public ObjectMorpher
+
+class Cubes : public ObjectFactory
 {
 public:
 	void DrawCube();
+	void Draw();
+	friend class ObjectFactory;
 };
 
 

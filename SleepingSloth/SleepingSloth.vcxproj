@@ -85,12 +85,12 @@
     <ClCompile Include="Circles.cpp" />
     <ClCompile Include="Cubes.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="ObjectMorpher.cpp" />
+    <ClCompile Include="ObjectFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circles.h" />
     <ClInclude Include="Cubes.h" />
-    <ClInclude Include="ObjectMorpher.h" />
+    <ClInclude Include="ObjectFactory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

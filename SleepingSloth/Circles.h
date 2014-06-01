@@ -1,9 +1,13 @@
-#include "ObjectMorpher.h"
+#include "ObjectFactory.h"
 
-class Circles : public ObjectMorpher
+class Circles : public ObjectFactory
 {
 public:
-	void DrawCircle( int amount );
+	void DrawCircle();
+	void Draw();
+	friend class ObjectFactory;
+
+private:
 };
 
 
