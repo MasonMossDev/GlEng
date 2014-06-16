@@ -1,13 +1,13 @@
-#include "Circles.h"
+#include "Cones.h"
 #include <glut.h>
 #include <math.h>
 
-void Circles::Draw()
+void Cones::Draw()
 {
-	DrawCircle();
+	DrawCone();
 }
 
-void Circles::DrawCircle( )
+void Cones::DrawCone()
 {
 
 	glPushMatrix();
@@ -18,10 +18,11 @@ void Circles::DrawCircle( )
 	GLfloat twicePi = 2.0 * 3.14159265;
 
 	glBegin(GL_TRIANGLE_FAN);
-	glVertex3f(0, 0, 0);
+	glVertex3f(0, 10, 0);
 	for (int i = 0; i <= 50; i++)
 	{
-		glVertex3f(0 + (10 * cos(i * twicePi / 50)), 10 + (10 * sin(i * twicePi / 50)), 0);
+		glColor3f(0, 0, 1);
+		glVertex3f(0 + (10 * cos(i * twicePi / 50)), 10 + (10 * sin(i * twicePi / 50)), 10);
 	}
 
 	glEnd();
