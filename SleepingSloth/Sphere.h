@@ -1,4 +1,4 @@
-#include "Cylinder.h"
+#include "ObjectFactory.h"
 
 class Sphere : public ObjectFactory
 {
@@ -8,4 +8,5 @@ public:
 	friend class ObjectFactory;
 
 private:
+	void DrawCollisionBox();
 };

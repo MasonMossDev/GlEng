@@ -1,6 +1,6 @@
 #include "Circles.h"
 #include <glut.h>
-#include <math.h>
+
 
 void Circles::Draw()
 {

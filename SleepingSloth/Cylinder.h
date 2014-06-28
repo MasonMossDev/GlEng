@@ -1,4 +1,4 @@
-#include "Cones.h"
+#include "ObjectFactory.h"
 
 class Cylinder : public ObjectFactory
 {

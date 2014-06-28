@@ -1,6 +1,6 @@
 #include "Sphere.h"
 #include <glut.h>
-#include <math.h>
+
 
 void Sphere::Draw()
 {

@@ -1,4 +1,4 @@
-#include "Cubes.h"
+#include "ObjectFactory.h"
 
 class Cones : public ObjectFactory
 {

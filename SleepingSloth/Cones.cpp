@@ -1,6 +1,5 @@
 #include "Cones.h"
 #include <glut.h>
-#include <math.h>
 
 void Cones::Draw()
 {

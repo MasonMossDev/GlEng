@@ -1,7 +1,7 @@
-#include "Sphere.h"
-#include <stdlib.h>
+#include "ObjectFactory.h"
 #include <vector>
-using namespace std;
+
+
 
 class ObjectList
 {
@@ -10,6 +10,7 @@ public:
 	void AddObject( ObjectFactory* objFac );
 	vector<ObjectFactory*>* ReturnFactoryList() const;
 	ObjectFactory* GetObjectFactoryItem( int i ) const;
+	void RemoveTopOfList();
 	void SwapAndClear();
 	int Size();
 

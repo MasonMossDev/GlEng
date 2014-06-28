@@ -4,27 +4,46 @@
 #include <ctime>
 #include <string>
 #include <stdlib.h>
-#include "ObjectList.h"
-#include "tinyxml2.h"
 #include <sstream>
-#include <xstring>
+#include "tinyxml2.h"
+#include "ObjectList.h"
+#include "Circles.h"
+#include "Cones.h"
+#include "Cubes.h"
+#include "Cylinder.h"
+#include "Sphere.h"
+#include "ObjectFactory.h"
+
+
+
+
 using namespace std;
 using namespace tinyxml2;
 
 double VerticalAngle = -20.0f;
 bool MouseActive = false;
 int InitY;
-
-
+unsigned char buttonVal;
+Cubes cube2;
 XMLDocument* Doc;
 XMLElement* root;
 ObjectFactory* Object;
 bool Rotate = false;
 int RotDir = -1;
 double Rot_Angle = 0.0f;
-double cameraZ = -30.0f;
+double cameraZ = -600.0f;
 clock_t RotStartTime;
 ObjectList* objStorageList;
+int PointX = 0;
+int PointY = 0;
+int PointXTemp = 0;
+int PointYTemp = 0;
+//Mouse handlers//////////////////////////////////////////
+
+
+
+
+/////////////////////////////////////////////////////////
 
 void TestDrawing()
 {
@@ -36,6 +55,7 @@ void TestDrawing()
 		}
 	}
 
+	
 /*	ObjectFactory *Circ1 = ObjectFactory::create("Circles");
 	Circ1->SetValues( 0, 0, 0, 1, 1, 1, 0, 0.1, 0.5 );
 	Circ1->Draw();
@@ -60,11 +80,6 @@ void TestDrawing()
 	ObjectFactory * Obj1 = &circle1;
 	Obj1->SetValues( 0, 0, 60, 1, 1, 1, 0, 0.1, 1 );
 	circle1.DrawCircle( );
-
-	Cubes cube2;
-	ObjectFactory * Obj2 = &cube2;
-	Obj2->SetValues( 0, 0, 80, 1, 1, 1, 0, 1, 0 );
-	cube2.DrawCube( );
 
 	Cones Cone2;
 	ObjectFactory* Obj3 = &Cone2;
@@ -92,12 +107,29 @@ void handleResize(int w, int h)
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45.0, (double)w / (double)h, 1.0, 1500);
+	gluPerspective(45, (double)w / (double)h, 1.0, 1500);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 }
 
+void DrawGrid()
+{
+	glPushMatrix();
+	glBegin(GL_LINES);
+
+	for (int i = -50; i <= 50; i++)
+	{
+		glVertex3f(i, 0.0, 50.0);
+		glVertex3f(i, 0.0, -50.0);
+
+		glVertex3f( -50.0, 0.0, i);
+		glVertex3f( 50.0, 0.0, i);
+	}
+
+	glEnd();
+	glPopMatrix();
+}
 void DrawScene()
 {
 	glEnable(GL_BLEND | GL_DEPTH_BUFFER_BIT);
@@ -113,13 +145,34 @@ void DrawScene()
 
 	//Drawing Function is below
 	TestDrawing();
+
+	glColor3f(0.2, 0.0, 1.0);
+	DrawGrid();
 	///////////////////////////
 
 	glutSwapBuffers();
 }
 
+
+
 void keyboardFunc(unsigned char btn, int w, int h)
 {
+
+	if (btn == 'z' || btn == 'Z')
+	{
+		buttonVal = 'Z';
+	}
+	if (btn == 'c' || btn == 'C')
+	{
+		objStorageList = ObjectList::GetInstance();
+		if (objStorageList->Size() != 0)
+		{
+			ObjectFactory::PopTopOfNameList();
+			objStorageList->RemoveTopOfList();
+		}
+
+		
+	}
 
 	if (btn == 'L' || btn == 'l')
 	{
@@ -336,9 +389,7 @@ void keyboardFunc(unsigned char btn, int w, int h)
 
 
 		ObjectFactory *newObj = ObjectFactory::create( objType );
-		newObj->SetValues( xCoord, yCoord, zCoord, xScale, yScale, zScale, rCol, gCol, bCol );
-
-
+		newObj->SetValues( xCoord, yCoord, zCoord, xScale, yScale, zScale, rCol, gCol, bCol, cameraZ );
 		objStorageList = ObjectList::GetInstance();
 		objStorageList->AddObject(newObj);
 
@@ -403,12 +454,47 @@ void ChangeViewingAngle(double deltaView)
 		VerticalAngle = -180;
 }
 
+void GetOGLPos(int &x, int &y)
+{
+	GLint viewport[4]; //var to hold the viewport info
+	GLdouble modelview[16]; //var to hold the modelview info
+	GLdouble projection[16]; //var to hold the projection matrix info
+	GLfloat winX, winY, winZ; //variables to hold screen x,y,z coordinates
+	GLdouble worldX, worldY, worldZ; //variables to hold world x,y,z coordinates
+
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelview); //get the modelview info
+	glGetDoublev(GL_MODELVIEW_MATRIX, projection); //get the projection matrix info
+	glGetIntegerv(GL_VIEWPORT, viewport); //get the viewport info
+
+	double xP = x / (double)600
+		* (600 - 0) + 0;
+	double yP = (1 - y / (double)600)
+		* (600 - 0) + 0;
+
+//	float MouseRelativeToCenterX = x - 600/ 2.f;
+//	float MouseRelativeToCenterY = -(y - 600/ 2.f);
+//	x = MouseRelativeToCenterX;
+///	y = MouseRelativeToCenterY;
+//	winX = (float)x;
+//	winY = (float)viewport[3] - (float)y;
+//	winZ = 0;
+	//get the world coordinates from the screen coordinates
+//		gluUnProject(winX, winY, winZ, modelview, projection, viewport, &worldX, &worldY, &worldZ);
+
+}
+
+
 void MouseFunc(int button, int state, int x, int y)
 {
+
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 	{
 		MouseActive = true;
 		InitY = y;
+		GetOGLPos(x, y);
+		PointXTemp = x;
+		PointYTemp = y;
+
 	}
 	else
 	{
@@ -416,14 +502,57 @@ void MouseFunc(int button, int state, int x, int y)
 	}
 }
 
+
 void MouseMove(int x, int y)
 {
 	if (!MouseActive)
 	{
 		return;
 	}
-	ChangeViewingAngle((InitY - y)*0.5);
-	InitY = y;
+
+
+	if (buttonVal == 'Z')
+	{
+		
+		PointX =  PointXTemp - 296;
+		PointY = -( PointYTemp - 300)-16 ;
+
+		if (PointY < -100)
+		{
+			int i = 5;
+		}
+		
+		if (objStorageList != nullptr)
+		{
+			for (int i = 0; i < objStorageList->Size(); i++)
+			{
+				ObjectFactory *obj = objStorageList->GetObjectFactoryItem(i);
+				if (PointX >= obj->BottomLeftFront.x  &&  PointY >= obj->BottomLeftFront.y)
+				{
+					if (PointX <= obj->BottomRightFront.x  &&  PointY >= obj->BottomRightFront.y)
+					{
+						if (PointX >= obj->TopLeftFront.x  &&  PointY <= obj->TopLeftFront.y)
+						{
+							if (PointX <= obj->TopRightFront.x && PointY <= obj->TopRightFront.y)
+							{
+								int x = 5;
+								ObjectFactory *cube = objStorageList->GetObjectFactoryItem(i);
+								x = 4;
+							}
+						}
+					}					
+				}
+			}
+		}
+	}
+	else
+	{
+		ChangeViewingAngle((InitY - y)*0.5);
+		InitY = y;
+	}
+
+
+
 }
 
 

@@ -1,6 +1,5 @@
 #include "Cubes.h"
 #include <glut.h>
-#define TIXML_USE_STL
 
 void Cubes::Draw()
 {
@@ -13,6 +12,8 @@ void Cubes::DrawCube()
 	glTranslatef	( XPos, YPos, ZPos );
 	glScalef		( XScale, YScale, ZScale );
 	glColor3f		( RCol, GCol, BCol );
+
+
 
 	DrawFront();
 	DrawLeft();
@@ -34,10 +35,14 @@ void Cubes::DrawFront()
 		int y = 0;
 		int z = 0;
 
-		glColor3f(0, 0, 1);
-
 			glVertex3f(0, 0, 0);
 			glVertex3f(10, 0, 0);
+			int num = (-10 * XScale) + (ZoomAmount - 600);
+			this->SetBottomLeftFront(num , 0, 0);
+			this->SetTopLeftFront(num, 25 * YScale, 0);
+			this->SetTopRightFront(0, 25 * YScale, 0);
+			this->SetBottomRightFront(0, 0, 0);
+
 
 			for (int i = 0; i < 26; i++)
 			{
@@ -80,7 +85,6 @@ void Cubes::DrawLeft()
 		int x = 0;
 		int y = 0;
 		int z = 0;
-		glColor3f(0, 1, 0);
 
 			glVertex3f(0, 0, 0);
 			glVertex3f(0, 0, 10);
@@ -125,8 +129,6 @@ void Cubes::DrawRight()
 	int y = 0;
 	int z = 0;
 
-	glColor3f(1, 1, 0);
-
 	glVertex3f(10, 0, 10);
 	glVertex3f(10, 0, 0);
 	
@@ -169,8 +171,6 @@ void Cubes::DrawBack()
 	int x = 0;
 	int y = 0;
 	int z = 0;
-
-	glColor3f(1, 0, 0);
 
 	glVertex3f(0, 0, 10);
 	glVertex3f(10, 0, 10);
@@ -215,8 +215,6 @@ void Cubes::DrawTop()
 	int y = 0;
 	int z = 0;
 
-	glColor3f(0, 1, 1);
-
 	glVertex3f(0, 24, 0);
 	glVertex3f(10, 24, 0);
 
@@ -254,8 +252,6 @@ void Cubes::DrawBottom()
 	glPushMatrix();
 
 	glBegin(GL_TRIANGLE_STRIP);
-
-	glColor3f(1, 0, 1);
 
 	glVertex3f(0, 0, 0);
 	glVertex3f(10, 0, 0);

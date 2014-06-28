@@ -1,23 +1,18 @@
 #include "ObjectFactory.h"
 
-class Cubes : public ObjectFactory
+class Pyramid : public ObjectFactory
 {
 public:
-	void DrawCube();
+	void DrawPyramid();
 	void Draw();
 	friend class ObjectFactory;
 
 protected:
 	void DrawFront();
+	void DrawBack();
 	void DrawLeft();
 	void DrawRight();
-	void DrawBack();
-	void DrawTop();
 	void DrawBottom();
 
 private:
-
 };
-
-
-

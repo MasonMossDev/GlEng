@@ -42,3 +42,8 @@ void ObjectList::SwapAndClear()
 	objectList->clear();
 	objectList->swap(*swapVec);
 }
+
+void ObjectList::RemoveTopOfList()
+{
+	objectList->pop_back();
+}
