@@ -15,7 +15,7 @@ class ObjectFactory
 public:
 	static ObjectFactory * create(string obj);
 	virtual void Draw() = 0;
-	void SetValues(double xPos, double yPos, double zPos, double xScale, double yScale, double zScale, double rCol, double gCol, double bCol, float zoomAmount = 0);
+	void SetValues(double xPos, double yPos, double zPos, double xScale, double yScale, double zScale, double rCol, double gCol, double bCol);
 
 	string GetObjTypeName(int i);
 	static void PopTopOfNameList();

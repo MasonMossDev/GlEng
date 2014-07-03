@@ -37,7 +37,7 @@ void Cubes::DrawFront()
 
 			glVertex3f(0, 0, 0);
 			glVertex3f(10, 0, 0);
-			int num = (-10 * XScale) + (ZoomAmount - 600);
+			int num = (-10 * XScale) ;
 			this->SetBottomLeftFront(num , 0, 0);
 			this->SetTopLeftFront(num, 25 * YScale, 0);
 			this->SetTopRightFront(0, 25 * YScale, 0);

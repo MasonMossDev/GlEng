@@ -13,9 +13,23 @@
 #include "Cylinder.h"
 #include "Sphere.h"
 #include "ObjectFactory.h"
+#include "XmlSerializer.h"
 
+//Selection Buffer
+#define SelBufferSize 512
 
+//Window size
+static int MainWindow;
+static int Border = 6, H = 600, W = 350;
 
+//Picking Stuff
+#define RENDER	1
+#define SELECT	2
+#define BUFSIZE 1024
+GLuint SelectBuf[BUFSIZE];
+GLuint Hits;
+int Mode = RENDER;
+int CursorX, CursorY;
 
 using namespace std;
 using namespace tinyxml2;
@@ -31,208 +45,170 @@ ObjectFactory* Object;
 bool Rotate = false;
 int RotDir = -1;
 double Rot_Angle = 0.0f;
-double cameraZ = -600.0f;
+double cameraZ = -150.0f;
 clock_t RotStartTime;
 ObjectList* objStorageList;
 int PointX = 0;
 int PointY = 0;
 int PointXTemp = 0;
 int PointYTemp = 0;
-//Mouse handlers//////////////////////////////////////////
 
 
-
-
-/////////////////////////////////////////////////////////
-
-void TestDrawing()
+void TestDrawing( )
 {
-	if (objStorageList != nullptr)
+	if ( objStorageList != nullptr )
 	{
-		for (int i = 0; i < objStorageList->Size(); i++)
+		for ( int i = 0; i < objStorageList->Size( ); i++ )
 		{
-			objStorageList->GetObjectFactoryItem(i)->Draw();
+			objStorageList->GetObjectFactoryItem( i )->Draw( );
 		}
 	}
 
-	
-/*	ObjectFactory *Circ1 = ObjectFactory::create("Circles");
-	Circ1->SetValues( 0, 0, 0, 1, 1, 1, 0, 0.1, 0.5 );
-	Circ1->Draw();
 
-	ObjectFactory *Cube1 = ObjectFactory::create("Cubes");
-	Cube1->SetValues( 0, 0, 20, 1, 1, 1, 1, 0, 1 );
-	Cube1->Draw();
+	/*	ObjectFactory *Circ1 = ObjectFactory::create("Circles");
+		Circ1->SetValues( 0, 0, 0, 1, 1, 1, 0, 0.1, 0.5 );
+		Circ1->Draw();
 
-	ObjectFactory *Cone1 = ObjectFactory::create("Cones");
-	Cone1->SetValues(0, 0, 40, 1, 1, 1, 1, 0, 0);
-	Cone1->Draw();
+		ObjectFactory *Cube1 = ObjectFactory::create("Cubes");
+		Cube1->SetValues( 0, 0, 20, 1, 1, 1, 1, 0, 1 );
+		Cube1->Draw();
 
-	ObjectFactory *Cy1 = ObjectFactory::create("Cylinder");
-	Cy1->SetValues(0, 0, 120, 5, 1, 5, 1, 0, 0);
-	Cy1->Draw();
+		ObjectFactory *Cone1 = ObjectFactory::create("Cones");
+		Cone1->SetValues(0, 0, 40, 1, 1, 1, 1, 0, 0);
+		Cone1->Draw();
 
-	ObjectFactory *Sphere1 = ObjectFactory::create("Sphere");
-	Sphere1->SetValues(0, 5, -40, 1, 1, 1, 0, 0.1, 0.5);
-	Sphere1->Draw();
+		ObjectFactory *Cy1 = ObjectFactory::create("Cylinder");
+		Cy1->SetValues(0, 0, 120, 5, 1, 5, 1, 0, 0);
+		Cy1->Draw();
 
-	Circles circle1;
-	ObjectFactory * Obj1 = &circle1;
-	Obj1->SetValues( 0, 0, 60, 1, 1, 1, 0, 0.1, 1 );
-	circle1.DrawCircle( );
+		ObjectFactory *Sphere1 = ObjectFactory::create("Sphere");
+		Sphere1->SetValues(0, 5, -40, 1, 1, 1, 0, 0.1, 0.5);
+		Sphere1->Draw();
 
-	Cones Cone2;
-	ObjectFactory* Obj3 = &Cone2;
-	Obj3->SetValues(0, 0, 100, 1, 1, 1, 0, 1, 0);
-	Cone2.DrawCone();
+		Circles circle1;
+		ObjectFactory * Obj1 = &circle1;
+		Obj1->SetValues( 0, 0, 60, 1, 1, 1, 0, 0.1, 1 );
+		circle1.DrawCircle( );
 
-	Sphere Sphere2;
-	ObjectFactory* Obj5 = &Sphere2;
-	Obj5->SetValues(0, 5, 140, 1, 1, 1, 0, 1, 0);
-	Obj5->Draw();
+		Cones Cone2;
+		ObjectFactory* Obj3 = &Cone2;
+		Obj3->SetValues(0, 0, 100, 1, 1, 1, 0, 1, 0);
+		Cone2.DrawCone();
 
-	Cylinder Cy2;
-	ObjectFactory* Obj4 = &Cy2;
-	Obj4->SetValues(0, 0, -20, 1, 1, 1, 0, 1, 0);
-	Cy2.DrawCylinder();*/
+		Sphere Sphere2;
+		ObjectFactory* Obj5 = &Sphere2;
+		Obj5->SetValues(0, 5, 140, 1, 1, 1, 0, 1, 0);
+		Obj5->Draw();
+
+		Cylinder Cy2;
+		ObjectFactory* Obj4 = &Cy2;
+		Obj4->SetValues(0, 0, -20, 1, 1, 1, 0, 1, 0);
+		Cy2.DrawCylinder();*/
 }
 
-void initRendering()
+void initRendering( )
 {
-	glEnable(GL_DEPTH_TEST);
+	glEnable( GL_DEPTH_TEST );
 }
 
-void handleResize(int w, int h)
+void handleResize( int w , int h )
 {
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(45, (double)w / (double)h, 1.0, 1500);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	float ratio;
+
+
+	glViewport( 0 , 0 , w , h );
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity( );
+	gluPerspective( 45 , (double)w / (double)h , 1.0 , 1500 );
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity( );
 
 }
 
-void DrawGrid()
+void DrawGrid( )
 {
-	glPushMatrix();
-	glBegin(GL_LINES);
+	glPushMatrix( );
+	glBegin( GL_LINES );
 
-	for (int i = -50; i <= 50; i++)
+	for ( int i = -50; i <= 50; i++ )
 	{
-		glVertex3f(i, 0.0, 50.0);
-		glVertex3f(i, 0.0, -50.0);
+		glVertex3f( i , 0.0 , 50.0 );
+		glVertex3f( i , 0.0 , -50.0 );
 
-		glVertex3f( -50.0, 0.0, i);
-		glVertex3f( 50.0, 0.0, i);
+		glVertex3f( -50.0 , 0.0 , i );
+		glVertex3f( 50.0 , 0.0 , i );
 	}
 
-	glEnd();
-	glPopMatrix();
+	glEnd( );
+	glPopMatrix( );
 }
-void DrawScene()
+void DrawScene( )
 {
-	glEnable(GL_BLEND | GL_DEPTH_BUFFER_BIT);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	glEnable( GL_BLEND | GL_DEPTH_BUFFER_BIT );
+	glBlendFunc( GL_SRC_ALPHA , GL_ONE_MINUS_DST_ALPHA );
+	glClearColor( 0.0 , 0.0 , 0.0 , 0.0 );
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+	glMatrixMode( GL_MODELVIEW );
+	glLoadIdentity( );
 
-	gluLookAt(0.0, 0.0, cameraZ, 1.0, 1.0, 1.0, 0.0, 3.0, 0.0);
-	glRotatef(VerticalAngle, 1.0, 0.0, 0.0);
-	glRotatef(Rot_Angle, 0.0, 1.0, 0.0);
+	gluLookAt( 0.0 , 0.0 , cameraZ , 1.0 , 1.0 , 1.0 , 0.0 , 3.0 , 0.0 );
+	glRotatef( VerticalAngle , 1.0 , 0.0 , 0.0 );
+	glRotatef( Rot_Angle , 0.0 , 1.0 , 0.0 );
 
 	//Drawing Function is below
-	TestDrawing();
+	TestDrawing( );
 
-	glColor3f(0.2, 0.0, 1.0);
-	DrawGrid();
+	glColor3f( 0.2 , 0.0 , 1.0 );
+	DrawGrid( );
 	///////////////////////////
 
-	glutSwapBuffers();
+	glutSwapBuffers( );
 }
 
+#define CUBE 1
+#define FLOOR 2
+void renderInSelectionMode( )
+{
+	glInitNames( );
+	glPushName( FLOOR );
+	DrawGrid( );
+	glPopName( );
+	objStorageList = ObjectList::GetInstance( );
+	for ( int i = 0; i < objStorageList->Size( ); i++ )
+	{
+		glPushMatrix( );
+		glPushName( i );
+		objStorageList->GetObjectFactoryItem( i )->Draw( );
+		glPopName( );
+		glPopMatrix( );
+	}
 
+
+}
 
 void keyboardFunc(unsigned char btn, int w, int h)
 {
 
-	if (btn == 'z' || btn == 'Z')
+	if ( btn == 'z' || btn == 'Z' )
 	{
 		buttonVal = 'Z';
 	}
-	if (btn == 'c' || btn == 'C')
+	if ( btn == 'c' || btn == 'C' )
 	{
-		objStorageList = ObjectList::GetInstance();
-		if (objStorageList->Size() != 0)
+		objStorageList = ObjectList::GetInstance( );
+		if ( objStorageList->Size( ) != 0 )
 		{
-			ObjectFactory::PopTopOfNameList();
-			objStorageList->RemoveTopOfList();
+			ObjectFactory::PopTopOfNameList( );
+			objStorageList->RemoveTopOfList( );
 		}
 
-		
 	}
 
 	if (btn == 'L' || btn == 'l')
-	{
-		XMLDocument doc;
-		doc.LoadFile("test.xml");
-
-		XMLNode* decl = doc.FirstChild();
-		
-		XMLNode* root = decl->NextSibling();
-		
-		XMLNode* objParentNode = nullptr;
-		
-		for (objParentNode = root->FirstChild(); objParentNode; objParentNode = objParentNode->NextSibling())
-		{
-			XMLNode* typeNode = objParentNode->FirstChild();
-			XMLElement* typeElement = typeNode->ToElement();
-			const char * typeVal = typeElement->GetText();
-
-			XMLNode* xCoordNode = typeNode->NextSibling()->FirstChild();
-			XMLElement* xCoordElement = xCoordNode->ToElement();
-			double xCoordVal = atof(xCoordElement->GetText());
-
-			XMLNode* yCoordNode = xCoordNode->NextSibling();
-			XMLElement* yCoordElement = yCoordNode->ToElement();
-			double yCoordVal = atof(yCoordElement->GetText());
-
-			XMLNode* zCoordNode = yCoordNode->NextSibling();
-			XMLElement* zCoordElement = zCoordNode->ToElement();
-			double zCoordVal = atof(zCoordElement->GetText());
-
-			XMLNode* xScaleNode = typeNode->NextSibling()->NextSibling()->FirstChild();
-			XMLElement* xScaleElement = xScaleNode->ToElement();
-			double xScaleVal = atof(xScaleElement->GetText());
-
-			XMLNode* yScaleNode = xScaleNode->NextSibling();
-			XMLElement* yScaleElement = yScaleNode->ToElement();
-			double yScaleVal = atof(yScaleElement->GetText());
-
-			XMLNode* zScaleNode = yScaleNode->NextSibling();
-			XMLElement* zScaleElement = zScaleNode->ToElement();
-			double zScaleVal = atof(zScaleElement->GetText());
-
-			XMLNode* rColNode = typeNode->NextSibling()->NextSibling()->NextSibling()->FirstChild();
-			XMLElement* rColElement = rColNode->ToElement();
-			double rColVal = atof(rColElement->GetText());
-
-			XMLNode* gColNode = rColNode->NextSibling();;
-			XMLElement* gColElement = gColNode->ToElement();
-			double gColVal = atof(gColElement->GetText());
-
-			XMLNode* bColNode = gColNode->NextSibling();;
-			XMLElement* bColElement = bColNode->ToElement();
-			double bColVal = atof(bColElement->GetText());
-
-			ObjectFactory *newObj = ObjectFactory::create(typeVal);
-			newObj->SetValues(xCoordVal, yCoordVal, zCoordVal, xScaleVal, yScaleVal, zScaleVal, rColVal, gColVal, bColVal);
-
-			objStorageList = ObjectList::GetInstance();
-			objStorageList->AddObject(newObj);
-		}
+	{		
+		objStorageList = ObjectList::GetInstance();
+		XmlSerializer serializer( XmlSerializer::ModeRead );
+		serializer.LoadFromXml( *objStorageList );
 	}
 	if ( btn == 'S' || btn == 's' )
 	{
@@ -240,114 +216,12 @@ void keyboardFunc(unsigned char btn, int w, int h)
 
 		if (objStorageList != nullptr)
 		{
-			XMLDocument doc;
-			XMLDeclaration *decl = doc.NewDeclaration();
-			doc.InsertEndChild(decl);
-			XMLNode *root = doc.NewElement( "ObjectFactoryList" );
-			doc.InsertEndChild(root);
-				
-			for (int i = 0; i < objStorageList->Size(); i++)
-			{
-
-				XMLNode *objParentNode =	doc.NewElement("Object");
-				XMLNode *objType =			doc.NewElement( "Type" );				
-				XMLNode *objCoordinates =	doc.NewElement( "Coordinates" );
-				XMLNode *objScale =			doc.NewElement( "Scale" );
-				XMLNode *objColour =		doc.NewElement( "Colour" );
-
-				XMLNode *objXcoord =		doc.NewElement( "XCoord" );
-				XMLNode *objYcoord =		doc.NewElement( "YCoord" );
-				XMLNode *objZcoord =		doc.NewElement( "ZCoord" );
-					
-				XMLNode *objXscale =		doc.NewElement( "XScale" );
-				XMLNode *objYscale =		doc.NewElement( "YScale" );
-				XMLNode *objZscale =		doc.NewElement( "ZScale" );
-
-				XMLNode *objRcol =			doc.NewElement( "RCol" );
-				XMLNode *objGcol =			doc.NewElement( "GCol" );
-				XMLNode *objBcol =			doc.NewElement( "BCol" );
-
-				stringstream xCoordStr, yCoordStr, zCoordStr, xScaleStr, yScaleStr, zScaleStr, rColStr, gColStr, bColStr;
-					
-				xCoordStr.str("");
-				xCoordStr << objStorageList->GetObjectFactoryItem(i)->getXpos();
-
-				yCoordStr.str("");
-				yCoordStr << objStorageList->GetObjectFactoryItem(i)->getYpos();
-
-				zCoordStr.str("");
-				zCoordStr << objStorageList->GetObjectFactoryItem(i)->getZpos();
-
-				xScaleStr.str("");
-				xScaleStr << objStorageList->GetObjectFactoryItem(i)->getXscale();
-
-				yScaleStr.str("");
-				yScaleStr << objStorageList->GetObjectFactoryItem(i)->getYscale();
-
-				zScaleStr.str("");
-				zScaleStr << objStorageList->GetObjectFactoryItem(i)->getZscale();
-
-				rColStr.str("");
-				rColStr << objStorageList->GetObjectFactoryItem(i)->getRcol();
-
-				gColStr.str("");
-				gColStr << objStorageList->GetObjectFactoryItem(i)->getGcol();
-
-				bColStr.str("");
-				bColStr << objStorageList->GetObjectFactoryItem(i)->getBcol();
-
-				XMLText *objTypeValue =		doc.NewText( objStorageList->GetObjectFactoryItem(i)->GetObjTypeName(i).c_str() );
-				XMLText *objXcoordValue =	doc.NewText( xCoordStr.str().c_str() );
-				XMLText *objYcoordValue =	doc.NewText( yCoordStr.str().c_str() );
-				XMLText *objZcoordValue =	doc.NewText( zCoordStr.str().c_str() );
-				XMLText *objXscaleValue =	doc.NewText( xScaleStr.str().c_str() );
-				XMLText *objYscaleValue =	doc.NewText( yScaleStr.str().c_str() );
-				XMLText *objZscaleValue =	doc.NewText( zScaleStr.str().c_str() );
-				XMLText *objRcolValue =		doc.NewText( rColStr.str().c_str() );
-				XMLText *objGcolValue =		doc.NewText( gColStr.str().c_str() );
-				XMLText *objBcolValue =		doc.NewText( bColStr.str().c_str() );
-
-
-				root->				InsertEndChild( objParentNode );
-				objParentNode->		InsertEndChild(objType);
-				objType->			InsertEndChild( objTypeValue );
-				objParentNode->		InsertEndChild(objCoordinates);
-				objParentNode->		InsertEndChild(objScale);
-				objParentNode->		InsertEndChild(objColour);
-
-				objCoordinates->	InsertEndChild( objXcoord );
-				objXcoord->			InsertEndChild( objXcoordValue );
-
-				objCoordinates->	InsertEndChild( objYcoord );
-				objYcoord->			InsertEndChild( objYcoordValue );
-
-				objCoordinates->	InsertEndChild( objZcoord );
-				objZcoord->			InsertEndChild( objZcoordValue );
-
-				objScale->			InsertEndChild( objXscale );
-				objXscale->			InsertEndChild( objXscaleValue );
-
-				objScale->			InsertEndChild( objYscale );
-				objYscale->			InsertEndChild( objYscaleValue );
-
-				objScale->			InsertEndChild( objZscale );
-				objZscale->			InsertEndChild( objZscaleValue );
-
-				objColour->			InsertEndChild( objRcol );
-				objRcol->			InsertEndChild( objRcolValue );
-
-				objColour->			InsertEndChild( objGcol );
-				objGcol->			InsertEndChild( objGcolValue );
-
-				objColour->			InsertEndChild( objBcol );
-				objBcol->			InsertEndChild( objBcolValue );					
-					
-			}
-			doc.SaveFile("test.xml");
+			XmlSerializer serializer(XmlSerializer::ModeWrite);
+			serializer.WriteToXml(objStorageList);
 		}
 	}
 	//Stop and start the rotation
-	if ((btn == 'R') || (btn == 'r'))
+	if ( ( btn == 'R' ) || ( btn == 'r' ) )
 	{
 		Rotate = !Rotate;
 		if (Rotate) {
@@ -355,15 +229,15 @@ void keyboardFunc(unsigned char btn, int w, int h)
 		}
 	}
 	//Change the dirrection of rotation
-	if ((btn == 'X') || ((btn == 'x') && (Rotate)))
+	if ( ( btn == 'X' ) || ( ( btn == 'x' ) && ( Rotate ) ) )
 	{
 		RotDir = -RotDir;
 	}
 
-	if (btn == '`')
+	if ( btn == '`' )
 	{
 		string objType;
-		float xCoord, yCoord, zCoord, rCol, gCol, bCol, xScale, yScale, zScale;
+		float xCoord , yCoord , zCoord , rCol , gCol , bCol , xScale , yScale , zScale;
 
 		cout << "Enter the object Type to create: ";
 		cin >> objType;
@@ -387,114 +261,88 @@ void keyboardFunc(unsigned char btn, int w, int h)
 		cout << "Blue Value: ";
 		cin >> bCol;
 
-
 		ObjectFactory *newObj = ObjectFactory::create( objType );
-		newObj->SetValues( xCoord, yCoord, zCoord, xScale, yScale, zScale, rCol, gCol, bCol, cameraZ );
-		objStorageList = ObjectList::GetInstance();
-		objStorageList->AddObject(newObj);
+		newObj->SetValues( xCoord , yCoord , zCoord , xScale , yScale , zScale , rCol , gCol , bCol);
+		objStorageList = ObjectList::GetInstance( );
+		objStorageList->AddObject( newObj );
 
 	}
 
-	if (btn == 27)
+	if ( btn == 27 )
 	{
-		exit(0);
+		exit( 0 );
 	}
 }
 
 //Code to zoom in and out of the scene
-void zoom(double zoomAmount)
+void zoom( double zoomAmount )
 {
 	cameraZ += zoomAmount;
 }
 
-void specialKeys(int key, int w, int h)
+void specialKeys( int key , int w , int h )
 {
-	if (key == GLUT_KEY_UP)
+	if ( key == GLUT_KEY_UP )
 	{
-		zoom(1.0);
+		zoom( 1.0 );
 	}
-	if (key == GLUT_KEY_DOWN)
+	if ( key == GLUT_KEY_DOWN )
 	{
-		zoom(-1.0);
+		zoom( -1.0 );
 	}
 }
 
-void rotate(double deltaTheta)
+void rotate( double deltaTheta )
 {
 	Rot_Angle += deltaTheta;
-	while (Rot_Angle >= 360.0)
+	while ( Rot_Angle >= 360.0 )
 	{
 		Rot_Angle -= 360.0;
 	}
-	while (Rot_Angle < 0.0)
+	while ( Rot_Angle < 0.0 )
 	{
 		Rot_Angle += 360.0;
 	}
 }
 
-void IdleFunc()
+void IdleFunc( )
 {
-	if (Rotate)
+	if ( Rotate )
 	{
-		double deltaTheta = 36.0* (clock() - RotStartTime) / CLOCKS_PER_SEC * RotDir;
-		rotate(deltaTheta);
-		RotStartTime = clock();
+		double deltaTheta = 36.0* ( clock( ) - RotStartTime ) / CLOCKS_PER_SEC * RotDir;
+		rotate( deltaTheta );
+		RotStartTime = clock( );
 	}
-	glutPostRedisplay();
+	glutPostRedisplay( );
 }
 
 //Beginning of mouse functions///////////////////////////////////////////////////////
 //Camera Angles of the scene controlled by the mouse
-void ChangeViewingAngle(double deltaView)
+void ChangeViewingAngle( double deltaView )
 {
 	VerticalAngle += deltaView;
-	if (VerticalAngle > 180.0)
+	if ( VerticalAngle > 180.0 )
 		VerticalAngle = 180;
-	if (VerticalAngle < -180)
+	if ( VerticalAngle < -180 )
 		VerticalAngle = -180;
 }
 
-void GetOGLPos(int &x, int &y)
+void GetOGLPos( int &x , int &y )
 {
-	GLint viewport[4]; //var to hold the viewport info
-	GLdouble modelview[16]; //var to hold the modelview info
-	GLdouble projection[16]; //var to hold the projection matrix info
-	GLfloat winX, winY, winZ; //variables to hold screen x,y,z coordinates
-	GLdouble worldX, worldY, worldZ; //variables to hold world x,y,z coordinates
-
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelview); //get the modelview info
-	glGetDoublev(GL_MODELVIEW_MATRIX, projection); //get the projection matrix info
-	glGetIntegerv(GL_VIEWPORT, viewport); //get the viewport info
-
 	double xP = x / (double)600
-		* (600 - 0) + 0;
-	double yP = (1 - y / (double)600)
-		* (600 - 0) + 0;
-
-//	float MouseRelativeToCenterX = x - 600/ 2.f;
-//	float MouseRelativeToCenterY = -(y - 600/ 2.f);
-//	x = MouseRelativeToCenterX;
-///	y = MouseRelativeToCenterY;
-//	winX = (float)x;
-//	winY = (float)viewport[3] - (float)y;
-//	winZ = 0;
-	//get the world coordinates from the screen coordinates
-//		gluUnProject(winX, winY, winZ, modelview, projection, viewport, &worldX, &worldY, &worldZ);
-
+		* ( 600 - 0 ) + 0;
+	double yP = ( 1 - y / (double)600 )
+		* ( 600 - 0 ) + 0;
 }
+GLuint selectBuf[512];
 
-
-void MouseFunc(int button, int state, int x, int y)
+void MouseFunc( int button , int state , int x , int y )
 {
 
-	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+	if ( ( button == GLUT_LEFT_BUTTON ) && ( state == GLUT_DOWN ) )
 	{
 		MouseActive = true;
 		InitY = y;
-		GetOGLPos(x, y);
-		PointXTemp = x;
-		PointYTemp = y;
-
 	}
 	else
 	{
@@ -503,51 +351,71 @@ void MouseFunc(int button, int state, int x, int y)
 }
 
 
-void MouseMove(int x, int y)
+void MouseMove( int x , int y )
 {
-	if (!MouseActive)
+	if ( !MouseActive )
 	{
 		return;
 	}
 
 
-	if (buttonVal == 'Z')
+	if ( buttonVal == 'Z' )
 	{
-		
-		PointX =  PointXTemp - 296;
-		PointY = -( PointYTemp - 300)-16 ;
 
-		if (PointY < -100)
+
+
+		PointX = PointXTemp - 296;
+		PointY = -( PointYTemp - 300 ) - 16;
+
+		GLint viewport[4]; //var to hold the viewport info
+		GLdouble modelview[16]; //var to hold the modelview info
+		GLdouble projection[16]; //var to hold the projection matrix info
+		GLdouble winX , winY , winZ; //variables to hold screen x,y,z coordinates
+		GLdouble worldX , worldY , worldZ; //variables to hold world x,y,z coordinates
+
+		glGetDoublev( GL_MODELVIEW_MATRIX , modelview ); //get the modelview info
+		glGetDoublev( GL_MODELVIEW_MATRIX , projection ); //get the projection matrix info
+		glGetIntegerv( GL_VIEWPORT , viewport ); //get the viewport info
+
+
+		if ( PointY < -100 )
 		{
 			int i = 5;
 		}
-		
-		if (objStorageList != nullptr)
+
+		if ( objStorageList != nullptr )
 		{
-			for (int i = 0; i < objStorageList->Size(); i++)
+			for ( int i = 0; i < objStorageList->Size( ); i++ )
 			{
-				ObjectFactory *obj = objStorageList->GetObjectFactoryItem(i);
-				if (PointX >= obj->BottomLeftFront.x  &&  PointY >= obj->BottomLeftFront.y)
+				ObjectFactory *obj = objStorageList->GetObjectFactoryItem( i );
+				worldX = -50;
+				worldY = 0;
+				worldZ = 0;
+				winX = 0;
+				winY = 0;
+				winZ = 0;
+				gluUnProject( worldX , worldY , worldZ , modelview , projection , viewport , &winX , &winY , &winZ );
+				if ( PointX >= obj->BottomLeftFront.x  &&  PointY >= obj->BottomLeftFront.y )
 				{
-					if (PointX <= obj->BottomRightFront.x  &&  PointY >= obj->BottomRightFront.y)
+					if ( PointX <= obj->BottomRightFront.x  &&  PointY >= obj->BottomRightFront.y )
 					{
-						if (PointX >= obj->TopLeftFront.x  &&  PointY <= obj->TopLeftFront.y)
+						if ( PointX >= obj->TopLeftFront.x  &&  PointY <= obj->TopLeftFront.y )
 						{
-							if (PointX <= obj->TopRightFront.x && PointY <= obj->TopRightFront.y)
+							if ( PointX <= obj->TopRightFront.x && PointY <= obj->TopRightFront.y )
 							{
 								int x = 5;
-								ObjectFactory *cube = objStorageList->GetObjectFactoryItem(i);
+								ObjectFactory *cube = objStorageList->GetObjectFactoryItem( i );
 								x = 4;
 							}
 						}
-					}					
+					}
 				}
 			}
 		}
 	}
 	else
 	{
-		ChangeViewingAngle((InitY - y)*0.5);
+		ChangeViewingAngle( ( InitY - y )*0.5 );
 		InitY = y;
 	}
 
@@ -559,25 +427,25 @@ void MouseMove(int x, int y)
 
 //End of mouse functions/////////////////////////////////////////////////////////////
 
-int main(int argc, char **argv)
+int main( int argc , char **argv )
 {
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	glutInitWindowSize(600, 600);
-	glutInitWindowPosition(200, 200);
-	glutCreateWindow("Ice Cube Engine");
-	initRendering();
+	glutInit( &argc , argv );
+	glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH );
+	glutInitWindowSize( 600 , 600 );
+	glutInitWindowPosition( 200 , 200 );
+	glutCreateWindow( "Ice Cube Engine" );
+	initRendering( );
 
-	glutDisplayFunc(DrawScene);
-	glutReshapeFunc(handleResize);
-	glutIdleFunc(IdleFunc);
-	glutKeyboardFunc(keyboardFunc);
-	glutSpecialFunc(specialKeys);
-	glutMouseFunc(MouseFunc);
-	glutMotionFunc(MouseMove);
-	glutKeyboardFunc(keyboardFunc);
+	glutDisplayFunc( DrawScene );
+	glutReshapeFunc( handleResize );
+	glutIdleFunc( IdleFunc );
+	glutKeyboardFunc( keyboardFunc );
+	glutSpecialFunc( specialKeys );
+	glutMouseFunc( MouseFunc );
+	glutMotionFunc( MouseMove );
+	glutKeyboardFunc( keyboardFunc );
 
-	glutMainLoop();
+	glutMainLoop( );
 
 	return 0;
 }

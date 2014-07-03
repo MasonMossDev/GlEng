@@ -8,24 +8,24 @@
 
 vector<string> ObjectFactory::ObjTypeName;
 
-ObjectFactory * ObjectFactory::create(std::string obj)
+ObjectFactory * ObjectFactory::create( std::string obj )
 {
-	ObjTypeName.insert( ObjTypeName.end(),obj );
-	if (obj == "cube") return new Cubes();
-	if (obj == "circle") return new Circles();
-	if (obj == "cone") return new Cones();
-	if (obj == "cylinder") return new Cylinder();
-	if (obj == "sphere") return new Sphere();
-	if (obj == "pyramid") return new Pyramid();
+	ObjTypeName.insert( ObjTypeName.end( ) , obj );
+	if ( obj == "cube" ) return new Cubes( );
+	if ( obj == "circle" ) return new Circles( );
+	if ( obj == "cone" ) return new Cones( );
+	if ( obj == "cylinder" ) return new Cylinder( );
+	if ( obj == "sphere" ) return new Sphere( );
+	if ( obj == "pyramid" ) return new Pyramid( );
 	return nullptr;
 }
 
-void ObjectFactory::PopTopOfNameList()
+void ObjectFactory::PopTopOfNameList( )
 {
-	ObjTypeName.pop_back();
+	ObjTypeName.pop_back( );
 }
 
-void ObjectFactory::SetValues(double xPos, double yPos, double zPos, double xScale, double yScale, double zScale, double rCol, double gCol, double bCol, float zoomAmount)
+void ObjectFactory::SetValues( double xPos , double yPos , double zPos , double xScale , double yScale , double zScale , double rCol , double gCol , double bCol )
 {
 	XPos = xPos;
 	YPos = yPos;
