@@ -83,14 +83,30 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Circles.cpp" />
+    <ClCompile Include="Cones.cpp" />
     <ClCompile Include="Cubes.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
+    <ClCompile Include="ObjectList.cpp" />
+    <ClCompile Include="Pyramid.cpp" />
+    <ClCompile Include="render.cpp" />
+    <ClCompile Include="Sphere.cpp" />
+    <ClCompile Include="tinyxml2.cpp" />
+    <ClCompile Include="XmlSerializer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Circles.h" />
+    <ClInclude Include="Cones.h" />
     <ClInclude Include="Cubes.h" />
+    <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="render.h" />
+    <ClInclude Include="ObjectList.h" />
+    <ClInclude Include="Pyramid.h" />
+    <ClInclude Include="Sphere.h" />
+    <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="ObjectFactory.h" />
+    <ClInclude Include="XmlSerializer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
