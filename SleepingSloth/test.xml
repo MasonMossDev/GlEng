@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ObjectFactoryList>
+    <Object>
+        <Type>cube</Type>
+        <Coordinates>
+            <XCoord>1</XCoord>
+            <YCoord>1</YCoord>
+            <ZCoord>1</ZCoord>
+        </Coordinates>
+        <Scale>
+            <XScale>1</XScale>
+            <YScale>1</YScale>
+            <ZScale>1</ZScale>
+        </Scale>
+        <Colour>
+            <RCol>1</RCol>
+            <GCol>0</GCol>
+            <BCol>0</BCol>
+        </Colour>
+    </Object>
+    <Object>
+        <Type>pyramid</Type>
+        <Coordinates>
+            <XCoord>-10</XCoord>
+            <YCoord>1</YCoord>
+            <ZCoord>-10</ZCoord>
+        </Coordinates>
+        <Scale>
+            <XScale>1</XScale>
+            <YScale>1</YScale>
+            <ZScale>1</ZScale>
+        </Scale>
+        <Colour>
+            <RCol>0</RCol>
+            <GCol>1</GCol>
+            <BCol>1</BCol>
+        </Colour>
+    </Object>
+</ObjectFactoryList>

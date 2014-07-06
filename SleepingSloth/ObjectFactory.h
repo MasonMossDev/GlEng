@@ -45,6 +45,50 @@ public:
 	CollisionBoxPoint BottomRightFront;
 	CollisionBoxPoint BottomRightBack;
 
+	inline void setXpos(double xpos) 
+	{
+		XPos = xpos;
+	}
+
+	inline void setYpos( double ypos )
+	{
+		YPos = ypos;
+	}
+
+	inline void setZpos( double zpos )
+	{
+		ZPos = zpos;
+	}
+
+	inline void setXScale( double xScale )
+	{
+		XScale = xScale;
+	}
+
+	inline void setYScale( double yScale )
+	{
+		YScale = yScale;
+	}
+
+	inline void setZScale( double zScale )
+	{
+		ZScale = zScale;
+	}
+
+	inline void setRcol( double rCol )
+	{
+		RCol = rCol;
+	}
+
+	inline void setGcol( double gCol )
+	{
+		GCol = gCol;
+	}
+
+	inline void setBcol( double bCol )
+	{
+		BCol = bCol;
+	}
 
 	inline double getXpos() const
 	{

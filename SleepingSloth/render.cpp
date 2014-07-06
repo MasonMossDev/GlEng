@@ -4,11 +4,16 @@
 #include <glu.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "ObjectList.h"
 #include "render.h"
+#include <iostream>
+#include <string>
+#include <stdlib.h>
+#include <sstream>
+#include "XmlSerializer.h"
 
-static GLint snowman_display_list;
-
+ObjectList* objStorageList;
+static GLint ObjectDisplayList;
 
 void quit( ) {}
 
@@ -16,8 +21,66 @@ void quit( ) {}
 void processKeyboard( unsigned char key , int x , int y )
 {
 	printf( "key: %d\n" , key );
-}
+	if ( key == '`' )
+	{
+		string objType;
+		float xCoord , yCoord , zCoord , rCol , gCol , bCol , xScale , yScale , zScale;
 
+		cout << "Enter the object Type to create: ";
+		cin >> objType;
+		cout << "Please enter the following attributes: " << endl;
+		cout << "X Coordinate: ";
+		cin >> xCoord;
+		cout << "Y Coordinate: ";
+		cin >> yCoord;
+		cout << "Z Coordinate: ";
+		cin >> zCoord;
+		cout << "X Scale: ";
+		cin >> xScale;
+		cout << "Y Scale: ";
+		cin >> yScale;
+		cout << "Z Scale: ";
+		cin >> zScale;
+		cout << "Red Value: ";
+		cin >> rCol;
+		cout << "Green Value: ";
+		cin >> gCol;
+		cout << "Blue Value: ";
+		cin >> bCol;
+
+		ObjectFactory *newObj = ObjectFactory::create( objType );
+		newObj->SetValues( xCoord , yCoord , zCoord , xScale , yScale , zScale , rCol , gCol , bCol );
+		objStorageList = ObjectList::GetInstance( );
+		objStorageList->AddObject( newObj );
+
+	}
+	if ( key == 'L' || key == 'l' )
+	{
+		objStorageList = ObjectList::GetInstance( );
+		XmlSerializer serializer( XmlSerializer::ModeRead );
+		serializer.LoadFromXml( *objStorageList );
+	}
+	if ( key == 'S' || key == 's' )
+	{
+		objStorageList = ObjectList::GetInstance( );
+
+		if ( objStorageList != nullptr )
+		{
+			XmlSerializer serializer( XmlSerializer::ModeWrite );
+			serializer.WriteToXml( objStorageList );
+		}
+	}
+	if ( key == 'Z' || key == 'z' )
+	{
+		objStorageList = ObjectList::GetInstance( );
+		if ( objStorageList->Size( ) != 0 )
+		{
+			ObjectFactory::PopTopOfNameList( );
+			objStorageList->RemoveTopOfList( );
+		}
+
+	}
+}
 
 void picked( GLuint name , int sw )
 {
@@ -44,50 +107,43 @@ void init( camera *cam )
 }
 
 
-void drawSnowMan( )
+void DrawGrid( )
 {
-
-
-	glColor3f( 1.0f , 1.0f , 1.0f );
-
-	// Draw Body	
-	glTranslatef( 0.0f , 0.75f , 0.0f );
-	glutSolidSphere( 0.75f , 20 , 20 );
-
-
-	// Draw Head
-	glTranslatef( 0.0f , 1.0f , 0.0f );
-	glutSolidSphere( 0.25f , 20 , 20 );
-
-	// Draw Eyes
 	glPushMatrix( );
-	glColor3f( 0.0f , 0.0f , 0.0f );
-	glTranslatef( 0.05f , 0.10f , 0.18f );
-	glutSolidSphere( 0.05f , 10 , 10 );
-	glTranslatef( -0.1f , 0.0f , 0.0f );
-	glutSolidSphere( 0.05f , 10 , 10 );
+	glBegin( GL_LINES );
+	glColor3f( 0 , 0 , 1 );
+	for ( int i = -25; i <= 25; i++ )
+	{
+		glVertex3f( i , 0.0 , 25 );
+		glVertex3f( i , 0.0 , -25 );
+
+		glVertex3f( -25 , 0.0 , i );
+		glVertex3f( 25 , 0.0 , i );
+	}
+
+	glEnd( );
 	glPopMatrix( );
-
-	// Draw Nose
-	glColor3f( 1.0f , 0.5f , 0.5f );
-	glRotatef( 0.0f , 1.0f , 0.0f , 0.0f );
-	glutSolidCone( 0.08f , 0.5f , 10 , 2 );
 }
-
 
 
 GLuint createDL( )
 {
-	GLuint snowManDL;
+	GLuint ObjectDrawList;
 
 	// Create the id for the list
-	snowManDL = glGenLists( 1 );
+	ObjectDrawList = glGenLists( 1 );
 
-	glNewList( snowManDL , GL_COMPILE );
-	drawSnowMan( );
+	glNewList( ObjectDrawList , GL_COMPILE );
+	if ( objStorageList != nullptr )
+	{
+		for ( int i = 0; i < objStorageList->Size( ); i++ )
+		{
+			objStorageList->GetObjectFactoryItem( i )->Draw( );
+		}
+	}
 	glEndList( );
 
-	return( snowManDL );
+	return( ObjectDrawList );
 }
 
 
@@ -95,38 +151,29 @@ void initScene( int argc , char **argv )
 {
 
 	glEnable( GL_DEPTH_TEST );
-	glEnable( GL_CULL_FACE );
-
-	snowman_display_list = createDL( );
+	ObjectDisplayList = createDL( );
 }
 
 
 
 void draw( )
 {
-
 	// Draw ground
-	glColor3f( 0.9f , 0.9f , 0.9f );
-	glBegin( GL_QUADS );
-	glVertex3f( -100.0f , 0.0f , -100.0f );
-	glVertex3f( -100.0f , 0.0f , 100.0f );
-	glVertex3f( 100.0f , 0.0f , 100.0f );
-	glVertex3f( 100.0f , 0.0f , -100.0f );
-	glEnd( );
+	DrawGrid( );
 
 	// Draw 4 SnowMen
-
-	for ( int i = 0; i < 2; i++ )
-	for ( int j = 0; j < 2; j++ )
+	if ( objStorageList != nullptr )
 	{
-		glPushMatrix( );
-		glPushName( i * 2 + j );
-		glTranslatef( i*3.0 , 0 , -j * 3.0 );
-		glCallList( snowman_display_list );
-		glPopName( );
-		glPopMatrix( );
-	}
+		for ( int i = 0; i < objStorageList->Size( ); i++ )
+		{
+			glPushMatrix( );
+			glPushName( i + 1 );
+			objStorageList->GetObjectFactoryItem( i )->Draw( );
 
+			glPopName( );
+			glPopMatrix( );
+		}
+	}
 }
 
 

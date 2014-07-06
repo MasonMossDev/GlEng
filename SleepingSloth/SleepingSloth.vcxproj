@@ -87,6 +87,7 @@
     <ClCompile Include="Cubes.cpp" />
     <ClCompile Include="Cylinder.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="ModesMenu.cpp" />
     <ClCompile Include="ObjectFactory.cpp" />
     <ClCompile Include="ObjectList.cpp" />
     <ClCompile Include="Pyramid.cpp" />
@@ -100,6 +101,7 @@
     <ClInclude Include="Cones.h" />
     <ClInclude Include="Cubes.h" />
     <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="ModesMenu.h" />
     <ClInclude Include="render.h" />
     <ClInclude Include="ObjectList.h" />
     <ClInclude Include="Pyramid.h" />

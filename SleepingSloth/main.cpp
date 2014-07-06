@@ -14,23 +14,27 @@
 #include "Sphere.h"
 #include "ObjectFactory.h"
 #include "XmlSerializer.h"
+#include "render.h"
+#include "ModesMenu.h"
+static camera cam;
 
-//Selection Buffer
+// Selection Buffer
 #define SelBufferSize 512
 
-//Window size
-static int MainWindow;
-static int Border = 6, H = 600, W = 350;
 
-//Picking Stuff
-#define RENDER	1
-#define SELECT	2
+static int mainWindow;
+static int border = 6 , h = 200 , w = 350;
+
+
+// Picking Stuff //
+#define RENDER					1
+#define SELECT					2
 #define BUFSIZE 1024
-GLuint SelectBuf[BUFSIZE];
-GLuint Hits;
-int Mode = RENDER;
-int CursorX, CursorY;
-
+GLuint selectBuf[BUFSIZE];
+GLint hits;
+int mode = RENDER;
+int cursorX , cursorY;
+int SelectedObject;
 using namespace std;
 using namespace tinyxml2;
 
@@ -45,15 +49,354 @@ ObjectFactory* Object;
 bool Rotate = false;
 int RotDir = -1;
 double Rot_Angle = 0.0f;
-double cameraZ = -150.0f;
+double cameraZ = -30.0f;
 clock_t RotStartTime;
-ObjectList* objStorageList;
+//ObjectList* objStorageList;
 int PointX = 0;
 int PointY = 0;
 int PointXTemp = 0;
 int PointYTemp = 0;
 
 
+//----------------------
+// Resizing
+//----------------------
+
+
+
+void changeSize( int w1 , int h1 )
+{
+
+	float ratio;
+
+	h = h1;
+	w = w1;
+	// Prevent a divide by zero, when window is too short
+	// (you cant make a window of zero width).
+
+	if ( h == 0 )
+		h = 1;
+
+	ratio = 1.0f * w / h;
+	// Reset the coordinate system before modifying
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity( );
+
+	// Set the viewport to be the entire window
+	glViewport( 0 , 0 , w , h );
+
+	// Set the clipping volume
+	gluPerspective( 45 , ratio , 0.1 , 1000 );
+
+	// setting the camera now
+	glMatrixMode( GL_MODELVIEW );
+}
+
+
+//---------------
+// Picking Stuff
+//---------------
+
+
+void startPicking( )
+{
+
+	GLint viewport[4];
+	float ratio;
+
+	glSelectBuffer( BUFSIZE , selectBuf );
+
+	glGetIntegerv( GL_VIEWPORT , viewport );
+
+	glRenderMode( GL_SELECT );
+
+	glInitNames( );
+
+	glMatrixMode( GL_PROJECTION );
+	glPushMatrix( );
+	glLoadIdentity( );
+
+	gluPickMatrix( cursorX , viewport[3] - cursorY , 5 , 5 , viewport );
+	ratio = ( viewport[2] + 0.0 ) / viewport[3];
+	gluPerspective( 45 , ratio , 0.1 , 1000 );
+	glMatrixMode( GL_MODELVIEW );
+}
+
+
+void processHits2( GLint hits , GLuint buffer[] , int sw )
+{
+	GLint i , j , numberOfNames;
+	GLuint names , *ptr , minZ , *ptrNames;
+	ptr = nullptr;
+	ptrNames = nullptr;
+	ptr = (GLuint *)buffer;
+	minZ = 0xffffffff;
+	for ( i = 0; i < hits; i++ )
+	{
+		names = *ptr;
+		ptr++;
+		if ( *ptr < minZ )
+		{
+			numberOfNames = names;
+			minZ = *ptr;
+			ptrNames = ptr + 2;
+		}
+
+		ptr += names + 2;
+	}
+	if ( numberOfNames > 0 )
+	{
+		ptr = ptrNames;
+		for ( j = 0; j < numberOfNames; j++ , ptr++ )
+		{
+			SelectedObject = *ptr;
+			printf( "%d " , *ptr );
+		}
+	}
+	else
+	{
+		SelectedObject = 0;
+		printf( "You didn't click a snowman!" );
+	}
+	printf( "\n" );
+
+}
+
+void stopPicking( )
+{
+
+	glMatrixMode( GL_PROJECTION );
+	glPopMatrix( );
+	glMatrixMode( GL_MODELVIEW );
+	glFlush( );
+	hits = glRenderMode( GL_RENDER );
+	if ( hits != 0 )
+	{
+		processHits2( hits , selectBuf , 0 );
+	}
+	mode = RENDER;
+}
+
+
+
+//-----------------
+// Rendering
+//-----------------
+
+void RotateV( double deltaTheta )
+{
+	Rot_Angle += deltaTheta;
+	while ( Rot_Angle >= 360.0 )
+	{
+		Rot_Angle -= 360.0;
+	}
+	while ( Rot_Angle < 0.0 )
+	{
+		Rot_Angle += 360.0;
+	}
+}
+
+
+void renderScene( )
+{
+
+
+	glutSetWindow( mainWindow );
+
+	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+	if ( mode == SELECT )
+	{
+		startPicking( );
+	}
+	glLoadIdentity( );
+
+
+	gluLookAt( cam.pos[0] ,
+			   cam.pos[1] ,
+			   cameraZ ,
+
+			   cam.lookAt[0] ,
+			   cam.lookAt[1] ,
+			   cam.lookAt[2] ,
+
+			   cam.lookUp[0] ,
+			   cam.lookUp[1] ,
+			   cam.lookUp[2] );
+	glPushMatrix( );
+		glRotatef( VerticalAngle , 1.0 , 0.0 , 0.0 );
+		glRotatef( Rot_Angle , 0.0 , 1.0 , 0.0 );
+		//gluLookAt( 0.0 , 0.0 , cameraZ , 1.0 , 1.0 , 1.0 , 0.0 , 3.0 , 0.0 );
+		draw( );
+	glPopMatrix( );
+	if ( Rotate )
+	{
+		double deltaTheta = 36.0* ( clock( ) - RotStartTime ) / CLOCKS_PER_SEC * RotDir;
+		RotateV( deltaTheta );
+		RotStartTime = clock( );
+	}
+	glutPostRedisplay( );
+
+	if ( mode == SELECT )
+	{
+		stopPicking( );
+	}
+	else
+	{
+		// Enable blending
+		glAlphaFunc( GL_GREATER , 0.1 );
+		glEnable( GL_ALPHA_TEST );
+		glEnable( GL_BLEND );
+		glBlendFunc( GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA );
+
+		glMatrixMode( GL_PROJECTION );
+		glPushMatrix( );
+		glLoadIdentity( );
+		glOrtho( 0 , w , h , 0 , 0 , 1000 );
+		glMatrixMode( GL_MODELVIEW );
+		glPushMatrix( );
+		glLoadIdentity( );
+
+		glScalef( 80 , 80 , 0 );
+
+		ModesMenu Menu;
+		Menu.Draw( );
+
+		glMatrixMode( GL_PROJECTION );
+		glPopMatrix( );
+		glMatrixMode( GL_MODELVIEW );
+		glPopMatrix( );
+
+		glutSwapBuffers( );
+	}
+}
+
+
+
+//-------------------
+// Keyboard and Mouse
+//-------------------
+
+
+void processNormalKeys( unsigned char key , int x , int y )
+{
+
+	if ( ( key == 'R' ) || ( key == 'r' ) )
+	{
+		Rotate = !Rotate;
+		if ( Rotate )
+		{
+			RotStartTime = clock( );
+		}
+	}
+	if ( key == 27 )
+	{
+		quit( );
+		exit( 0 );
+	}
+	else
+		processKeyboard( key , x , y );
+}
+
+void ChangeViewingAngle( double deltaView )
+{
+	VerticalAngle += deltaView;
+	if ( VerticalAngle > 180.0 )
+		VerticalAngle = 180;
+	if ( VerticalAngle < -180 )
+		VerticalAngle = -180;
+}
+
+void MouseMove( int x , int y )
+{
+	if ( SelectedObject != 0 )
+	{
+		PointX = ((x - 1000 )*0.07 );
+		PointY = -( ( y - 300) *0.07 );
+		ObjectFactory* a = ObjectList::GetInstance()->GetObjectFactoryItem( SelectedObject - 1 );
+		a->setXpos( PointX );
+		a->setYpos( PointY );
+	}
+	else
+	{
+		ChangeViewingAngle( ( InitY - y )*0.5 );
+		InitY = y;
+	}
+}
+
+void mouseStuff( int button , int state , int x , int y )
+{
+
+	if ( button != GLUT_LEFT_BUTTON || state != GLUT_DOWN )
+		return;
+
+	if ( ( button == GLUT_LEFT_BUTTON ) && ( state == GLUT_DOWN ) )
+	{
+		MouseActive = true;
+		InitY = y;
+		cursorX = x;
+		cursorY = y;
+		mode = SELECT;
+	}
+	else
+	{
+		MouseActive = false;
+	}
+
+	
+}
+
+void zoom( double zoomAmount )
+{
+	cameraZ += zoomAmount;
+}
+
+void specialKeys( int key , int w , int h )
+{
+	if ( key == GLUT_KEY_UP )
+	{
+		zoom( 1.0 );
+	}
+	if ( key == GLUT_KEY_DOWN )
+	{
+		zoom( -1.0 );
+	}
+}
+
+
+
+
+
+//---------
+// Main
+//---------
+
+int main( int argc , char **argv )
+{
+
+	glutInit( &argc , argv );
+	glutInitDisplayMode( GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA );
+	glutInitWindowPosition( 100 , 100 );
+	glutInitWindowSize( w , h );
+	mainWindow = glutCreateWindow( "SnowMen from Lighthouse 3D" );
+
+	glutKeyboardFunc( processNormalKeys );
+	glutSpecialFunc( specialKeys );
+	glutReshapeFunc( changeSize );
+	glutDisplayFunc( renderScene );
+	glutMouseFunc( mouseStuff );
+	glutIdleFunc( renderScene );
+	glutMotionFunc( MouseMove );
+
+	initScene( argc , argv );
+	init( &cam );
+
+	glutMainLoop( );
+
+	return( 0 );
+}
+
+/*
 void TestDrawing( )
 {
 	if ( objStorageList != nullptr )
@@ -103,7 +446,7 @@ void TestDrawing( )
 		Cylinder Cy2;
 		ObjectFactory* Obj4 = &Cy2;
 		Obj4->SetValues(0, 0, -20, 1, 1, 1, 0, 1, 0);
-		Cy2.DrawCylinder();*/
+		Cy2.DrawCylinder();
 }
 
 void initRendering( )
@@ -334,7 +677,7 @@ void GetOGLPos( int &x , int &y )
 	double yP = ( 1 - y / (double)600 )
 		* ( 600 - 0 ) + 0;
 }
-GLuint selectBuf[512];
+
 
 void MouseFunc( int button , int state , int x , int y )
 {
@@ -449,3 +792,27 @@ int main( int argc , char **argv )
 
 	return 0;
 }
+
+int main( int argc , char **argv )
+{
+
+	glutInit( &argc , argv );
+	glutInitDisplayMode( GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA );
+	glutInitWindowPosition( 100 , 100 );
+	glutInitWindowSize( W , H );
+	MainWindow = glutCreateWindow( "SnowMen from Lighthouse 3D" );
+
+	glutKeyboardFunc( processNormalKeys );
+	glutReshapeFunc( changeSize );
+	glutDisplayFunc( renderScene );
+	glutMouseFunc( mouseStuff );
+	glutIdleFunc( renderScene );
+
+
+	initScene( argc , argv );
+	init( &cam );
+
+	glutMainLoop( );
+
+	return( 0 );
+	}*/
